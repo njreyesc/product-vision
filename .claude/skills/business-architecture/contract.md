@@ -23,7 +23,7 @@
 
 - `capability` → `trace_up` на элемент Vision: `GOAL-*`, `MET-*`, `PRIN-*` или `SEG-*`.
   Capability без `trace_up` запрещена. Каждой capability задаются `impact` и `gap`
-  (повествовательную проработку см. в [capability-impact-map.md](capability-impact-map.md)).
+  (повествовательную discovery-форму Capability Impact Map см. в [SKILL.md](SKILL.md), раздел 1).
 - `requirement` → `trace_up` на родительскую `CAP-*` (или напрямую на `PRIN-*`, если требование
   реализует принцип из видения).
 - `process` / `kpi` / `raci` → `trace_up` на `CAP-*` (KPI может ссылаться и на `MET-*`,

@@ -6,7 +6,7 @@
 
 ```
 ## Capability map                                   (capability · CAP-00X)
-# 5–9 ключевых capability. Повествовательную discovery-форму с impact и gap см. в capability-impact-map.md.
+# 5–9 ключевых capability. Повествовательную discovery-форму с impact и gap см. в SKILL.md (раздел 1).
 | id | type | Capability | trace_up | source (as-is) | priority | impact | gap | KPI | status | owner | version |
 |----|------|------------|----------|----------------|----------|--------|-----|-----|--------|-------|---------|
 | CAP-001 | capability | {что бизнес должен уметь} | {GOAL-/MET-/PRIN-/SEG-*} | {что уже есть сейчас} | Must/Should/Could/Won't | use/improve/create/integrate/enabler | {что закрыть} | {≥1 KPI} | draft | {owner} | v0.1 |
