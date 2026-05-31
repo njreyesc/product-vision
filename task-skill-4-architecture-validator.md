@@ -16,7 +16,7 @@ product-vision → business-architecture → it-architecture
         [architecture-validator]  ← gate / проверка качества и связности
 ```
 
-Это **поперечный** (gate) скилл. Он не производит архитектуру, а **проверяет** артефакты трёх скиллов на связность, покрытие и трассируемость. Прямой аналог SDD-проверки `spec ↔ plan ↔ tasks`.
+Это **поперечный** (gate) скилл. Он не производит архитектуру, а **проверяет** артефакты трёх скиллов на связность, покрытие и трассируемость. Базовый режим — SDD-проверка `spec ↔ plan`; нижний gate `tasks ↔ implement` выполняется отдельными engineering-проверками (`code-review` / `verify` / `security-review`) или расширением валидатора при наличии task-артефактов.
 
 ---
 
@@ -27,12 +27,14 @@ product-vision → business-architecture → it-architecture
 **Триггеры:** «проверь архитектуру», «валидация трассируемости», «найди gap», «gate-проверка».
 
 **Вход:**
-- Выходы скиллов `product-vision`, `business-architecture`, `it-architecture` (в формате handoff schema, с `id` / `trace_up` / `covers`)
+- Выходы скиллов `product-vision`, `business-architecture`, `it-architecture` в формате базового handoff schema:
+  `id` / `type` / `text` / `trace_up` / `source` / `status` / `owner` / `version`.
+- `covers` требуется только для ИТ-компонентов и mapping-записей (`application` / `data` / `infra` / `mapping`).
 
 **Выход:**
-- **Матрица трассируемости** `Vision-цель → Capability → ИТ-компонент`
+- **Матрица трассируемости** `Vision-цель/принцип → Capability/Requirement → ИТ-компонент`
 - **Список gap** с классификацией и рекомендуемым действием
-- Вердикт gate: `pass` / `pass with warnings` / `fail`
+- Вердикт gate: `PASS` / `PASS WITH WARNINGS` / `FAIL`
 
 ---
 
@@ -40,14 +42,15 @@ product-vision → business-architecture → it-architecture
 
 | Проверка | Правило | Нарушение = |
 |----------|---------|-------------|
-| Покрытие вниз | каждая `GOAL/PRIN` отражена в ≥1 `CAP` | непокрытая цель |
-| Покрытие вниз | каждая `CAP` имеет реализацию (`covers`) в ИТ-арх | непокрытая capability |
-| Трассируемость вверх | каждый `CAP`/`APP` имеет валидный `trace_up` | «осиротевший» элемент |
-| Лишние элементы | компонент ИТ-арх без `trace_up` | компонент без обоснования |
+| Покрытие вниз | каждая `GOAL/PRIN` отражена в ≥1 `CAP`/`REQ` | непокрытая цель/принцип |
+| Покрытие вниз | каждая `CAP`/`REQ` имеет реализацию (`covers`) в ИТ-арх или явный `gap` с действием | непокрытая capability/requirement |
+| Трассируемость вверх | каждый не-root артефакт имеет валидный `trace_up` на существующий `id` | «осиротевший» элемент |
+| Provenance | каждый артефакт имеет `source`; `source` не используется вместо `trace_up` | потерян источник |
+| Лишние элементы | компонент ИТ-арх без валидного `trace_up` или без `covers` | компонент без обоснования |
 | NFR | нефункциональные требования отражены в infra-слое | непокрытый NFR |
 | Принципы | каждый `PRIN` соблюдён (нет противоречащих ADR) | нарушение принципа |
 | Обратная связь | блок enablement присутствует в ИТ-арх | отсутствует петля |
-| Открытые вопросы | критичные допущения не закрыты | риск/блокер |
+| Открытые вопросы | `Q-*`/`ASSUMP-*` со `severity: blocker` остаются `open` | риск/блокер |
 
 ---
 
@@ -57,7 +60,10 @@ product-vision → business-architecture → it-architecture
 |---------|----------|------------------------|
 | `uncovered-goal` | цель видения без capability | вернуть в `business-architecture` |
 | `uncovered-capability` | capability без реализации | вернуть в `it-architecture` |
-| `orphan-component` | компонент без trace_up | удалить или обосновать |
+| `uncovered-requirement` | требование без компонента/infra-покрытия | вернуть в `it-architecture` |
+| `invalid-trace` | `trace_up` указывает на несуществующий `id` или внешний источник | исправить связь или добавить отсутствующий артефакт |
+| `missing-source` | у артефакта нет provenance | заполнить `source` |
+| `orphan-component` | компонент без валидного `trace_up`/`covers` | удалить или обосновать |
 | `nfr-miss` | NFR не покрыт инфраструктурой | дополнить infra-слой |
 | `principle-violation` | ADR противоречит принципу | пересмотреть решение / эскалация в Vision |
 | `open-blocker` | незакрытое критичное допущение | создать задачу / уточнить вход |
@@ -68,15 +74,15 @@ product-vision → business-architecture → it-architecture
 
 Дополнительный режим валидатора: на вход — описание фичи, на выход — **уровень высоты (0–4)** и какие скиллы запускать. Используется перед delta-проходом (см. `task-skills-feature-workflow.md`).
 
-**Алгоритм (снизу вверх, первое «да» = уровень):**
+**Алгоритм:** оценить все признаки и взять максимальный уровень. Это предотвращает занижение высоты: например, новая capability, которая затрагивает `PRIN-*`, получает уровень 4, а не 2.
 
 | Уровень | Вопрос | Запускать |
 |---------|--------|-----------|
 | 0 — Код | меняется только реализация, поведение то же? | сразу код |
-| 1 — Requirement | меняется поведение в рамках существующей `CAP-*`? | `business-architecture` (REQ delta) + gate |
-| 2 — Capability | появляется новая `CAP-*`, которой не было? | полный delta 0→4 |
-| 3 — Vision | меняется цель/метрика/сегмент/value proposition? | пересмотр `product-vision` |
-| 4 — Principle | фича противоречит `PRIN-*` или требует его менять? | `constitution` + эскалация |
+| 1 — Requirement | меняется поведение в рамках существующей `CAP-*`? | `business-architecture` (REQ delta) + IT reuse-check + gate |
+| 2 — Capability | появляется новая `CAP-*`, которой не было? | `business-architecture` (CAP/REQ delta) + `it-architecture` delta + gate |
+| 3 — Vision | меняется цель/метрика/сегмент/value proposition? | `product-vision` delta + downstream delta + gate |
+| 4 — Principle | фича противоречит `PRIN-*` или требует его менять? | `constitution`/principle review + эскалация + downstream delta |
 
 **Trace-тест (4 вопроса, итог = максимум):**
 1. К какому `trace_up` цепляется фича (REQ/CAP → 0–1; новый CAP → 2; новый GOAL → 3)?
@@ -102,10 +108,12 @@ product-vision → business-architecture → it-architecture
 
 ```
 ## Матрица трассируемости
-| Vision (GOAL/PRIN) | Capability (CAP) | ИТ-компонент (APP/DATA) | статус |
+| Vision (GOAL/PRIN) | Business (CAP/REQ) | ИТ-компонент (APP/DATA/INFRA) | статус |
+|--------------------|--------------------|-------------------------------|--------|
 
 ## Найденные gap
 | id | тип | элемент | описание | действие |
+|----|-----|---------|----------|----------|
 
 ## Вердикт gate
 PASS / PASS WITH WARNINGS / FAIL
@@ -118,13 +126,15 @@ PASS / PASS WITH WARNINGS / FAIL
 
 ```
 ## Матрица трассируемости
-| GOAL-01 | CAP-02 (скоринг)   | APP scoring-engine        | OK   |
-| PRIN-01 | CAP-03 (объяснение)| APP explainability-модуль | OK   |
-| GOAL-02 | CAP-04 (мониторинг)| —                         | GAP  |
+| Vision | Business | ИТ-компонент | статус |
+|--------|----------|--------------|--------|
+| GOAL-01 | CAP-02 / REQ-01 (скоринг) | APP scoring-engine | OK |
+| PRIN-01 | CAP-03 / REQ-02 (объяснение) | APP explainability-модуль | OK |
+| GOAL-02 | CAP-04 (мониторинг) | — | GAP |
 
 ## Найденные gap
-| id    | тип                  | элемент | действие                         |
-| G-01  | uncovered-capability | CAP-04  | вернуть в it-architecture: нет реализации мониторинга |
+| id    | тип                  | элемент | описание | действие |
+| G-01  | uncovered-capability | CAP-04  | нет реализации мониторинга | вернуть в it-architecture |
 
 ## Вердикт gate
 PASS WITH WARNINGS — блокеров: 0, предупреждений: 1
@@ -148,16 +158,17 @@ PASS WITH WARNINGS — блокеров: 0, предупреждений: 1
 
 | Этот скилл | Этап SDD |
 |------------|----------|
-| Проверка связности артефактов | gate между `specify ↔ plan ↔ tasks` |
+| Проверка связности артефактов | gate между `specify ↔ plan` |
+| Проверка tasks/implement | отдельный нижний gate через engineering-проверки или расширение при наличии task-артефактов |
 
-Аналог автоматической проверки соответствия спецификации, плана и реализации в SDD-конвейере: не пропускает дальше, пока цепочка не связна.
+Аналог автоматической проверки соответствия спецификации и плана в SDD-конвейере: не пропускает дальше, пока цепочка не связна. Реализация и код проверяются следующим gate-слоем.
 
 ---
 
 ## Общие требования
 
 - Язык вывода: русский.
-- Работает только с артефактами в формате handoff schema (требует `id`/`trace_up`/`covers`).
+- Работает только с артефактами в формате handoff schema (требует `id`/`trace_up`/`source`; `covers` требуется только для ИТ-компонентов и mapping-записей).
 - Версионирование отчёта (привязка к версиям проверяемых артефактов).
 
 ## Что НЕ входит
