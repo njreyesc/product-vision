@@ -12,7 +12,7 @@
   "query": "На входе видение продукта оценки рисков: GOAL-001 сократить цикл решения (MET-001 время оценки ≤5 мин), GOAL-002 снизить повторные ревью (MET-002 ≤10%), PRIN-001 объяснимость обязательна, SEG-001 риск-менеджер. Построй бизнес-архитектуру.",
   "files": [],
   "expected_behavior": [
-    "Строит capability map; у каждой capability есть trace_up на GOAL-*/MET-*/PRIN-*/SEG-*, priority (MoSCoW) и ≥1 KPI",
+    "Строит capability map (5–9 capability); у каждой есть trace_up на GOAL-*/MET-*/PRIN-*/SEG-*, priority (MoSCoW), ≥1 KPI, тип impact (use/improve/create/integrate/enabler) и gap (as-is → to-be)",
     "Описывает процессы to-be с trace_up на CAP-*",
     "Требования измеримы (величина + порог + единица) и помечены func/nfr; для nfr указан класс ограничения",
     "Принцип PRIN-001 (объяснимость) отражён хотя бы в одном требовании через trace_up",

@@ -80,7 +80,14 @@ Product Vision  →  [Бизнес-архитектура]  →  ИТ-архит
 (не *как* технически). Каждая capability: `trace_up` на Vision, `priority` (MoSCoW) и **хотя бы
 один KPI**.
 
-Зачем: разложить намерение из Vision на управляемый набор способностей бизнеса.
+Выбирай **5–9 ключевых** capability. Для каждой определи **тип impact**
+(use / improve / create / integrate / enabler) и **gap** — что уже есть сейчас (as-is) и что нужно
+закрыть. Если нужно проработать разрыв as-is → to-be в повествовательной форме до таблицы,
+используй discovery-шаблон Capability Impact Map: см. [capability-impact-map.md](capability-impact-map.md).
+`impact` и `gap` затем переносятся в табличную карту и контракт.
+
+Зачем: разложить намерение из Vision на управляемый набор способностей бизнеса и сразу увидеть,
+какие из них создаются с нуля, а какие переиспользуются/улучшаются.
 
 ### 2. Процессы to-be / ценностные потоки (process · PROC-00X)
 
@@ -153,7 +160,7 @@ KPI должны быть согласованы с North Star метрикам�
 
 ```
 - [ ] 1. Принять вход product-vision (GOAL-*/MET-*/PRIN-*/SEG-*); зафиксировать source каждого as-is сигнала
-- [ ] 2. Вывести capability map; каждой capability — trace_up на Vision, priority и ≥1 KPI
+- [ ] 2. Вывести capability map (5–9 ключевых); каждой capability — trace_up на Vision, priority, ≥1 KPI, тип impact и gap (as-is → to-be)
 - [ ] 3. Описать процессы to-be / ценностные потоки с trace_up на CAP-*
 - [ ] 4. Вывести измеримые требования (func/nfr) с trace_up на CAP-*/PRIN-*; проверить, что каждый PRIN-* отражён
 - [ ] 5. Задать KPI процессов (текущее/целевое/срок) в согласовании с MET-*
@@ -168,6 +175,7 @@ KPI должны быть согласованы с North Star метрикам�
 
 - Полная схема полей: см. [contract.md](contract.md).
 - Точные шаблоны разделов: см. [templates.md](templates.md).
+- Discovery-форма capability map (impact + gap): см. [capability-impact-map.md](capability-impact-map.md).
 - Готовый пример (риск-продукт): см. [examples.md](examples.md).
 
 Ключевые правила (кратко):
@@ -191,7 +199,8 @@ KPI должны быть согласованы с North Star метрикам�
 
 ## Definition of Done
 
-- Каждая capability имеет `trace_up` на Vision, `priority` (MoSCoW) и хотя бы один KPI.
+- Capability map содержит 5–9 ключевых возможностей; каждая capability имеет `trace_up` на Vision,
+  `priority` (MoSCoW), хотя бы один KPI, тип `impact` (use/improve/create/integrate/enabler) и `gap` (as-is → to-be).
 - Каждое требование измеримо, привязано к capability через `trace_up` и имеет `source`;
   для `nfr` указан класс ограничения.
 - Каждый принцип из видения (`PRIN-*`) отражён хотя бы в одном требовании.
@@ -202,7 +211,7 @@ KPI должны быть согласованы с North Star метрикам�
 ## Чек-лист перед отправкой ответа (Self-check)
 
 ### Полнота и качество
-- ✅ Есть capability map; у каждой capability priority и ≥1 KPI
+- ✅ Есть capability map (5–9 ключевых); у каждой capability priority, ≥1 KPI, тип impact и gap (as-is → to-be)
 - ✅ Описаны процессы to-be / ценностные потоки
 - ✅ Требования измеримы (величина + порог + единица), помечены func/nfr
 - ✅ KPI согласованы с North Star метриками Vision (где применимо — текущее/целевое/срок)

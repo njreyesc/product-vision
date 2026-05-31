@@ -6,9 +6,10 @@
 
 ```
 ## Capability map                                   (capability · CAP-00X)
-| id | type | Capability | trace_up | source | priority | KPI | status | owner | version |
-|----|------|------------|----------|--------|----------|-----|--------|-------|---------|
-| CAP-001 | capability | {что бизнес должен уметь} | {GOAL-/MET-/PRIN-/SEG-*} | {as-is/оргструктура/регуляторика} | Must/Should/Could/Won't | {≥1 KPI} | draft | {owner} | v0.1 |
+# 5–9 ключевых capability. Повествовательную discovery-форму с impact и gap см. в capability-impact-map.md.
+| id | type | Capability | trace_up | source (as-is) | priority | impact | gap | KPI | status | owner | version |
+|----|------|------------|----------|----------------|----------|--------|-----|-----|--------|-------|---------|
+| CAP-001 | capability | {что бизнес должен уметь} | {GOAL-/MET-/PRIN-/SEG-*} | {что уже есть сейчас} | Must/Should/Could/Won't | use/improve/create/integrate/enabler | {что закрыть} | {≥1 KPI} | draft | {owner} | v0.1 |
 
 ## Процессы to-be / ценностные потоки               (process · PROC-00X)
 | id | type | process | trace_up | source | status | owner | version |

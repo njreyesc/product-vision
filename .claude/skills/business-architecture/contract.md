@@ -12,6 +12,8 @@
 | `trace_up` | Внутренняя связь вверх (см. правила ниже) |
 | `source` | Внешний источник/provenance: as-is процесс, оргструктура, регуляторика, бэклог, интервью |
 | `priority` | MoSCoW: Must / Should / Could / Won't (для capability и requirement) |
+| `impact` | Тип воздействия на capability: use / improve / create / integrate / enabler (для capability) |
+| `gap` | Разрыв as-is → to-be: что нужно закрыть (для capability). «Что уже есть сейчас» фиксируется в `source` |
 | `nfr` | Класс нефункционального ограничения, если требование — `nfr` (latency, throughput, availability, security, compliance) |
 | `status` | draft / approved |
 | `owner` | Владелец (RACI: Accountable) |
@@ -20,7 +22,8 @@
 ## Правила трассировки
 
 - `capability` → `trace_up` на элемент Vision: `GOAL-*`, `MET-*`, `PRIN-*` или `SEG-*`.
-  Capability без `trace_up` запрещена.
+  Capability без `trace_up` запрещена. Каждой capability задаются `impact` и `gap`
+  (повествовательную проработку см. в [capability-impact-map.md](capability-impact-map.md)).
 - `requirement` → `trace_up` на родительскую `CAP-*` (или напрямую на `PRIN-*`, если требование
   реализует принцип из видения).
 - `process` / `kpi` / `raci` → `trace_up` на `CAP-*` (KPI может ссылаться и на `MET-*`,
