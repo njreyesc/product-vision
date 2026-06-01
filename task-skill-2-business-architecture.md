@@ -48,16 +48,17 @@ Product Vision  →  [Бизнес-архитектура]  →  ИТ-архит
 | Поле | Назначение |
 |------|------------|
 | `id` | Идентификатор (напр. `CAP-001`, `REQ-002`, `KPI-001`) |
-| `type` | capability / process / requirement / kpi / role |
+| `type` | capability / process / requirement / kpi / role / raci / assumption / question |
 | `text` | Содержание |
-| `trace_up` | Ссылка на `id` из `product-vision` (GOAL/PRIN/...) |
+| `trace_up` | Внутренняя связь вверх: `id` из `product-vision` (`GOAL-*`, `MET-*`, `PRIN-*`, `SEG-*`) или родительская `CAP-*` для дочерних требований |
+| `source` | Внешний источник/provenance: as-is процесс, оргструктура, регуляторика, бэклог, интервью |
 | `priority` | MoSCoW: Must / Should / Could / Won't |
 | `nfr` | Нефункциональные ограничения (если есть) |
 | `status` | draft / approved |
 | `owner` | Владелец (RACI: Accountable) |
 | `version` | Версия |
 
-Каждая capability обязана иметь `trace_up` на элемент видения. `id` далее используются в `it-architecture`.
+Каждая capability обязана иметь `trace_up` на элемент Vision. Каждое требование обязано иметь `trace_up` на `CAP-*` или напрямую на `PRIN-*`, если требование реализует принцип. `source` не подменяет `trace_up`: он фиксирует происхождение данных.
 
 ---
 
@@ -65,21 +66,24 @@ Product Vision  →  [Бизнес-архитектура]  →  ИТ-архит
 
 ```
 ## Capability map
-| id | Capability | trace_up | priority | KPI |
-|----|------------|----------|----------|-----|
+| id | type | Capability | trace_up | source | priority | KPI | status | owner | version |
+|----|------|------------|----------|--------|----------|-----|--------|-------|---------|
 
 ## Процессы to-be / ценностные потоки
-- {поток}: шаг1 → шаг2 → ...                        [PROC-00X]
+| id | type | process | trace_up | source | status | owner | version |
+|----|------|---------|----------|--------|--------|-------|---------|
 
 ## Требования к capability
-| id | Capability | Требование | тип (func/nfr) | измеримость |
-|----|-----------|------------|----------------|-------------|
+| id | type | Capability | Требование | trace_up | source | тип (func/nfr) | nfr | измеримость | priority | status | owner | version |
+|----|------|------------|------------|----------|--------|----------------|-----|-------------|----------|--------|-------|---------|
 
 ## RACI (роли и ответственность)
-| Capability | R | A | C | I |
+| id | type | Capability | trace_up | source | R | A | C | I | status | owner | version |
+|----|------|------------|----------|--------|---|---|---|---|--------|-------|---------|
 
 ## Допущения и открытые вопросы
-- ...
+| id | type | text | trace_up | source | severity | status | owner | version |
+|----|------|------|----------|--------|----------|--------|-------|---------|
 ```
 
 ---
@@ -88,22 +92,33 @@ Product Vision  →  [Бизнес-архитектура]  →  ИТ-архит
 
 ```
 ## Capability map
-| id     | Capability            | trace_up | priority | KPI                    |
-| CAP-01 | Сбор данных контрагента | GOAL-01 | Must     | % авто-заполнения      |
-| CAP-02 | Расчёт риск-скоринга    | GOAL-01 | Must     | Время оценки, точность |
-| CAP-03 | Объяснение решения      | PRIN-01 | Must     | % решений с объяснением|
-| CAP-04 | Мониторинг портфеля     | GOAL-02 | Should   | Время реакции на риск  |
+| id     | type | Capability              | trace_up | source | priority | KPI                    | status | owner | version |
+|--------|------|-------------------------|----------|--------|----------|------------------------|--------|-------|---------|
+| CAP-01 | capability | Сбор данных контрагента | GOAL-01 | as-is интервью risk office | Must | % авто-заполнения | draft | COO | v0.1 |
+| CAP-02 | capability | Расчёт риск-скоринга    | GOAL-01 | value stream assessment | Must | Время оценки, точность | draft | CRO | v0.1 |
+| CAP-03 | capability | Объяснение решения      | PRIN-01 | регулятор: объяснимость | Must | % решений с объяснением | draft | CRO | v0.1 |
+| CAP-04 | capability | Мониторинг портфеля     | GOAL-02 | risk operations backlog | Should | Время реакции на риск | draft | CRO | v0.1 |
 
 ## Процессы to-be
-- Ценностный поток: заявка → сбор данных → скоринг → решение → мониторинг   [PROC-01]
+| id | type | process | trace_up | source | status | owner | version |
+|----|------|---------|----------|--------|--------|-------|---------|
+| PROC-01 | process | заявка → сбор данных → скоринг → решение → мониторинг | CAP-02 | воркшоп risk office | draft | COO | v0.1 |
 
 ## Требования к capability
-| id     | Capability | Требование              | тип | измеримость   |
-| REQ-01 | CAP-02     | Оценка выполняется ≤5мин | nfr | секунды       |
-| REQ-02 | CAP-03     | Каждое решение объяснено | func| % решений     |
+| id     | type | Capability | Требование              | trace_up | source | тип | nfr | измеримость | priority | status | owner | version |
+|--------|------|------------|------------|----------|--------|-----|-----|-------------|----------|--------|-------|---------|
+| REQ-01 | requirement | CAP-02 | Оценка выполняется ≤5мин | CAP-02 | воркшоп risk office | nfr | latency | секунды | Must | draft | CRO | v0.1 |
+| REQ-02 | requirement | CAP-03 | Каждое решение объяснено | CAP-03 | регулятор: объяснимость решений | func | — | % решений | Must | draft | CRO | v0.1 |
+
+## RACI (роли и ответственность)
+| id | type | Capability | trace_up | source | R | A | C | I | status | owner | version |
+|----|------|------------|----------|--------|---|---|---|---|--------|-------|---------|
+| RACI-01 | raci | CAP-02 | CAP-02 | оргструктура risk office | Risk analyst | CRO | Data owner | Sales | draft | COO | v0.1 |
 
 ## Допущения и открытые вопросы
-- Источник внешних данных не подтверждён (наследуется из VIS открытых вопросов)
+| id | type | text | trace_up | source | severity | status | owner | version |
+|----|------|------|----------|--------|----------|--------|-------|---------|
+| Q-02 | question | Источник внешних данных не подтверждён | CAP-01 | интеграционная гипотеза | blocker | open | Data owner | v0.1 |
 ```
 
 ---
@@ -111,8 +126,8 @@ Product Vision  →  [Бизнес-архитектура]  →  ИТ-архит
 ## Definition of Done
 
 - Каждая capability имеет `trace_up`, `priority` и хотя бы один KPI.
-- Каждое требование измеримо и привязано к capability.
-- Заполнены RACI и раздел «Допущения и открытые вопросы».
+- Каждое требование измеримо, привязано к capability через `trace_up` и имеет `source`.
+- Заполнены RACI и структурированный раздел «Допущения и открытые вопросы» (`Q-*` / `ASSUMP-*` с severity/status/owner).
 - Принципы из видения (`PRIN-*`) отражены в требованиях.
 
 ## Anti-scope (что скилл НЕ делает)
@@ -126,7 +141,7 @@ Product Vision  →  [Бизнес-архитектура]  →  ИТ-архит
 
 | Этот скилл | Этап SDD |
 |------------|----------|
-| Capability map, процессы, требования, KPI | **Specify → Plan** (детализация «что» в требования) |
+| Capability map, процессы, требования, KPI | **Specify** (детализация «что» до измеримых требований) |
 
 Выход = средняя часть спецификации: уточняет намерение из Vision до измеримых требований, готовых к технологическому планированию.
 

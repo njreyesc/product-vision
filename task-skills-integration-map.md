@@ -4,7 +4,7 @@
 **Контекст продукта (пример):** платформа оценки рисков (risk assessment).
 **Важно:** карта связи. Сами скиллы и интеграции по ней пока **не создаются**.
 
-Наши 4 скилла (`product-vision`, `business-architecture`, `it-architecture`, `architecture-validator`) — это **слой-каркас**: цепочка + handoff-контракт (`id`/`trace_up`/`covers`) + gate + трассируемость. Существующие плагин-скиллы и MCP — это **движки и источники** внутри этого каркаса.
+Наши 4 скилла (`product-vision`, `business-architecture`, `it-architecture`, `architecture-validator`) — это **слой-каркас**: цепочка + базовый handoff-контракт (`id`/`type`/`text`/`trace_up`/`source`/`status`/`owner`/`version`) + `covers` для ИТ/mapping + gate + трассируемость. Существующие плагин-скиллы и MCP — это целевые движки и источники внутри этого каркаса; доступность каждой интеграции проверяется при реализации.
 
 ---
 
@@ -76,7 +76,7 @@
 | Горизонт | Подключённая инфраструктура / скиллы |
 |----------|--------------------------------------|
 | **Г1 — оркестрация** | `Workflow`, `loop`, `schedule`, MCP `scheduled-tasks`; сборка — `skill-creator`, `create-cowork-plugin` |
-| **Г2 — MCP из источников** | Linear, Asana, Airtable, Supabase/DWH, Google Drive, Vercel → вход для ② и ③; `mcp-registry` для поиска коннекторов |
+| **Г2 — MCP из источников** | Linear, Asana, Airtable, Supabase/DWH, Google Drive, Vercel → вход для ①–③; `mcp-registry` для поиска коннекторов |
 | **Г3 — переписка** | Gmail MCP, Calendar MCP, nimble:`meeting-prep`, поиск по транскриптам сессий → извлечение требований/ADR |
 | **Г4 — доработка продукта** | product-management:`metrics-review`; product-tracking:`instrument-new-feature`/`audit`; data:`analyze`/`statistical-analysis`; engineering:`incident-response`; small-business:`customer-pulse` |
 
@@ -95,7 +95,7 @@
 
 ## Главный вывод
 
-- Наши скиллы **не дублируют** плагины — они добавляют связность: `id`/`trace_up`/`covers`, gate и сквозную трассировку, которых у разрозненных плагин-скиллов нет.
+- Наши скиллы **не дублируют** плагины — они добавляют связность: базовый контракт, `source`/provenance, `covers` для ИТ/mapping, gate и сквозную трассировку, которых у разрозненных плагин-скиллов нет.
 - Плагины — готовые «движки» внутри этапов (шаг «видение» → `pm:brainstorm`; «ADR» → `engineering:architecture`).
 - Для риск-продукта доменные `bigdata-com:risk-assessment` и `scenario-analysis` кормят ① (видение) и ④ (валидация сценариев).
 

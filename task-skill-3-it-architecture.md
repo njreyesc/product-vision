@@ -49,15 +49,17 @@ Product Vision  →  Бизнес-архитектура  →  [ИТ-архит�
 | Поле | Назначение |
 |------|------------|
 | `id` | Идентификатор (напр. `APP-001`, `DATA-002`, `ADR-001`) |
-| `type` | application / data / infra / mapping / adr / feedback |
+| `type` | application / data / infra / mapping / adr / roadmap_item / feedback / assumption / question |
 | `text` | Содержание |
-| `trace_up` | Ссылка на `id` capability/требования из `business-architecture` |
-| `covers` | Какие `CAP-*` закрывает компонент |
+| `trace_up` | Внутренняя связь вверх: `CAP-*`, `REQ-*` или `PRIN-*`, если ADR связан с принципом |
+| `source` | Внешний источник/provenance: репозиторий, CMDB, стандарт, техрадар, архитектурный воркшоп |
+| `covers` | Расширение для application/data/infra/mapping: какие `CAP-*`/`REQ-*` закрывает компонент |
 | `nfr` | Покрываемые нефункциональные требования |
 | `status` | draft / approved |
+| `owner` | Владелец решения/компонента |
 | `version` | Версия |
 
-Каждая `CAP-*` со входа должна встречаться в `covers` хотя бы одного компонента — иначе **gap**.
+Каждая `CAP-*` со входа должна встречаться в `covers` хотя бы одного компонента или mapping-записи — иначе **gap**. `covers` не требуется для Vision/Business-артефактов.
 
 ---
 
@@ -65,28 +67,36 @@ Product Vision  →  Бизнес-архитектура  →  [ИТ-архит�
 
 ```
 ## Application architecture
-| id | Сервис | covers (CAP) | назначение |
+| id | type | Сервис | trace_up | source | covers (CAP/REQ) | назначение | status | owner | version |
+|----|------|--------|----------|--------|------------------|------------|--------|-------|---------|
 
 ## Data architecture
-| id | Сущность/хранилище | источники | назначение |
+| id | type | Сущность/хранилище | trace_up | source | data_sources | covers (CAP/REQ) | назначение | status | owner | version |
+|----|------|--------------------|----------|--------|--------------|------------------|------------|--------|-------|---------|
 
 ## Technology / Infra (+ NFR)
-| id | Компонент | NFR (latency/безопасность/масштаб) |
+| id | type | Компонент | trace_up | source | covers (CAP/REQ) | NFR (latency/безопасность/масштаб) | status | owner | version |
+|----|------|-----------|----------|--------|------------------|----------------------------------|--------|-------|---------|
 
 ## Capability → application mapping
-| CAP | Реализация (APP/DATA) | статус (covered/gap) |
+| id | type | CAP/REQ | Реализация (APP/DATA/INFRA) | trace_up | source | covers | статус (covered/gap) | action |
+|----|------|---------|---------------------------|----------|--------|--------|----------------------|--------|
 
 ## ADR (ключевые решения)
-| id | Решение | Альтернативы | Обоснование | Последствия |
+| id | type | Решение | trace_up | source | Альтернативы | Обоснование | Последствия | status | owner | version |
+|----|------|---------|----------|--------|-------------|-------------|-------------|--------|-------|---------|
 
 ## Roadmap и оценка
-- этапы, build-vs-buy, тех-долг, риски миграции
+| id | type | этап/решение | trace_up | source | covers | оценка/стоимость | риск | status | owner | version |
+|----|------|--------------|----------|--------|--------|------------------|------|--------|-------|---------|
 
 ## Обратная связь наверх (enablement / ограничения)
-- {что нереализуемо/дорого/долго} → предложение по правке REQ/CAP/VIS
+| id | type | text | trace_up | source | target | recommendation | severity | status | owner | version |
+|----|------|------|----------|--------|--------|----------------|----------|--------|-------|---------|
 
 ## Допущения и открытые вопросы
-- ...
+| id | type | text | trace_up | source | severity | status | owner | version |
+|----|------|------|----------|--------|----------|--------|-------|---------|
 ```
 
 ---
@@ -95,19 +105,22 @@ Product Vision  →  Бизнес-архитектура  →  [ИТ-архит�
 
 ```
 ## Capability → application mapping
-| CAP    | Реализация                  | статус   |
-| CAP-01 | Ingestion-сервис + интеграции| covered  |
-| CAP-02 | Scoring engine + ML-платформа| covered  |
-| CAP-03 | Explainability-модуль (SHAP) | covered  |
-| CAP-04 | Event-streaming + триггеры   | covered  |
+| id | type | CAP/REQ | Реализация | trace_up | source | covers | статус | action |
+|----|------|---------|------------|----------|--------|--------|--------|--------|
+| MAP-01 | mapping | CAP-01 | APP-01 Ingestion-сервис + DATA-01 external-data | CAP-01 | architecture workshop | CAP-01 | covered | — |
+| MAP-02 | mapping | CAP-02 | APP-02 Scoring engine + DATA-02 model-store | CAP-02 | architecture workshop | CAP-02, REQ-01 | covered | — |
+| MAP-03 | mapping | CAP-03 | APP-03 Explainability-модуль (SHAP) | CAP-03 | architecture workshop | CAP-03, REQ-02 | covered | — |
+| MAP-04 | mapping | CAP-04 | APP-04 Event-streaming + триггеры | CAP-04 | architecture workshop | CAP-04 | covered | — |
 
 ## ADR
-| id     | Решение                  | Альтернативы      | Обоснование         |
-| ADR-01 | Интерпретируемая/гибридная модель | чистая нейросеть | требование PRIN-01 (объяснимость) |
+| id     | type | Решение | trace_up | source | Альтернативы | Обоснование | Последствия | status | owner | version |
+|--------|------|---------|----------|--------|-------------|-------------|-------------|--------|-------|---------|
+| ADR-01 | adr | Интерпретируемая/гибридная модель | PRIN-01 | architecture workshop | чистая нейросеть | требование PRIN-01 (объяснимость) | ниже риск регуляторного отказа, возможна потеря точности | draft | CTO | v0.1 |
 
 ## Обратная связь наверх
-- «Чистая нейросеть точнее, но необъяснима» → подтвердить приоритет PRIN-01
-  (объяснимость > максимальная точность) на уровне Vision.
+| id | type | text | trace_up | source | target | recommendation | severity | status | owner | version |
+|----|------|------|----------|--------|--------|----------------|----------|--------|-------|---------|
+| FB-01 | feedback | Чистая нейросеть точнее, но необъяснима | ADR-01 | architecture workshop | PRIN-01 | подтвердить приоритет объяснимости над максимальной точностью | warning | open | CRO | v0.1 |
 ```
 
 ---
@@ -117,8 +130,8 @@ Product Vision  →  Бизнес-архитектура  →  [ИТ-архит�
 - Каждая `CAP-*` входа имеет статус `covered` или явный `gap` с действием.
 - Заполнены три слоя (application/data/infra) и capability→application mapping.
 - Есть ≥1 ADR по ключевому решению и блок обратной связи.
-- NFR из требований отражены в infra-слое.
-- Заполнен раздел «Допущения и открытые вопросы».
+- NFR из требований отражены в infra-слое через `trace_up`/`covers`.
+- Заполнен структурированный раздел «Допущения и открытые вопросы» (`Q-*` / `ASSUMP-*` с severity/status/owner).
 
 ## Anti-scope (что скилл НЕ делает)
 
@@ -145,7 +158,7 @@ Product Vision  →  Бизнес-архитектура  →  [ИТ-архит�
  корректировка бизнес-арх и видения
 ```
 
-Требование: на каждом стыке выход предыдущего скилла должен **полностью покрываться** входом следующего (через `trace_up`/`covers`); непокрытые элементы помечаются как gap и обрабатываются скиллом-валидатором (см. `task-skill-4-architecture-validator.md`).
+Требование: на каждом стыке выход предыдущего скилла должен быть связан с выходом следующего через `trace_up`; техническое покрытие `CAP-*`/`REQ-*` фиксируется через `covers` только в ИТ-компонентах и mapping-записях. Непокрытые элементы помечаются как gap и обрабатываются скиллом-валидатором (см. `task-skill-4-architecture-validator.md`).
 
 ---
 
