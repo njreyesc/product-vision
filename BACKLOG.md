@@ -1,7 +1,8 @@
 # Бэклог доработок фреймворка
 
 Список улучшений, выявленных при ревью SDD-цепочки
-(`product-vision → business-architecture → it-architecture → validator`).
+(`product-vision → business-architecture → it-architecture → validator`)
+и при проработке интеграции с **superpowers** (нижний этап `plan → TDD → implement`).
 Сгруппирован по приоритету. Каждый пункт: что · зачем · где · фикс.
 
 ---
@@ -88,3 +89,67 @@
 - **Где:** [task-skill-4:43-53](task-skill-4-architecture-validator.md:43).
 - **Фикс:** добавить семантическую проверку соответствия (LLM-судья) поверх структурной —
   отдельный режим, т.к. недетерминированный.
+
+---
+
+## P1-INT — интеграция с superpowers (мост рядом, двунаправленный шов)
+
+Решение: фреймворки остаются раздельными, добавляется один **bridge-скилл**; стык
+двусторонний — спека уходит вниз в `superpowers:writing-plans`, обратная связь от реализации
+возвращается наверх в `FB-*` и валидатор (петля `plan → spec`).
+Совместимость по форме уже есть: скиллы superpowers — обычные `SKILL.md` с фронтматтером
+`name` + `description`, их видит тот же `Skill`-инструмент.
+
+### 11. Bridge-скилл `it-architecture → writing-plans` (шов вниз)
+- **Что:** нет скилла, который превращает выход `it-architecture` (`REQ-*`/`CAP-*`/`ADR-*`/NFR)
+  в spec на входе `superpowers:writing-plans`.
+- **Зачем:** `writing-plans` срабатывает «when you have a spec or requirements» — это ровно
+  ваш выход; без моста переход «спека → план» делается вручную и теряет id.
+- **Где:** новый `.claude/skills/sdd-to-superpowers/SKILL.md`; цель —
+  `docs/superpowers/plans/YYYY-MM-DD-<feature>.md` (путь-конвенция superpowers).
+- **Фикс:** скилл собирает spec-блок из `specs/it.md` (см. P1 №4), пишет required-заголовок
+  плана superpowers и для каждой задачи проставляет `trace_up: REQ-*/ADR-*`.
+
+### 12. Развести гейт `product-vision` vs `superpowers:brainstorming`
+- **Что:** `using-superpowers` принудительно гонит `brainstorming` перед планированием,
+  а `product-vision` перекрывается с ним (оба уточняют и не дают прыгать вперёд).
+- **Зачем:** двойной гейт → пользователь дважды проходит discovery, либо скиллы конфликтуют
+  за приоритет вызова.
+- **Где:** [using-superpowers/SKILL.md «Skill Priority»]; `product-vision/SKILL.md` (когда использовать).
+- **Фикс:** объявить `product-vision` как brainstorming-эквивалент для бизнес/EA-задач
+  (правило в `CLAUDE.md`: для product/architecture-работ discovery = `product-vision`,
+  дальше сразу `business-architecture`, минуя generic-brainstorming).
+
+### 13. Трассировка через границу «план → код» (шов вниз, продолжение P1 №5)
+- **Что:** `covers` доходит до компонента; задачи плана и коммиты не несут `trace_up`.
+- **Зачем:** без сквозного id код расходится с `ADR-*`/`REQ-*` незаметно — самый дорогой стык.
+- **Где:** `superpowers:writing-plans` (заголовок задачи), конвенция коммитов/PR.
+- **Фикс:** каждая задача плана и каждый коммит/PR несут `trace_up: REQ-*/ADR-*`;
+  объединить с P1 №5 как единый «нижний gate».
+
+### 14. Канал обратной связи наверх (шов вверх, двунаправленность)
+- **Что:** когда реализация (`test-driven-development` / `executing-plans` /
+  `verification-before-completion`) выявляет, что требование нереализуемо/дорого —
+  нет конвенции вернуть это в `FB-*`.
+- **Зачем:** без обратки петля `plan → spec` разомкнута; реализационные ограничения
+  не корректируют `REQ-*`/`CAP-*`/`PRIN-*`.
+- **Где:** стык `superpowers:verification-before-completion` /
+  `finishing-a-development-branch` → `it-architecture` блок `feedback`.
+- **Фикс:** bridge-скилл (или его обратная половина) принимает находку реализации и эмитит
+  `FB-*` с `target: REQ-*/CAP-*/PRIN-*` и `severity`; запись попадает в валидатор (см. №7).
+
+### 15. Валидатор: покрытие `REQ-*` задачами плана (шов как gate)
+- **Что:** покрытие проверяется до компонента; «`REQ-*` без задачи плана» не ловится.
+- **Зачем:** approved-требование может не дойти до реализации и пройти молча.
+- **Где:** правило покрытия валидатора [task-skill-4:43-53](task-skill-4-architecture-validator.md:43).
+- **Фикс:** добавить проверку «каждое `approved REQ-*` → ≥1 задача в
+  `docs/superpowers/plans/*`»; непокрытое = gap на границе реализации.
+
+### 16. Установка рядом с superpowers (упаковка-минимум)
+- **Что:** для совместного использования нужен манифест плагина, чтобы цепочка ставилась
+  как plugin рядом с superpowers.
+- **Зачем:** сейчас скиллы лежат в `.claude/skills/` репо; для дистрибуции и discovery
+  нужен `plugin.json` (`skills: ./skills/`) — форма уже совместима.
+- **Где:** корень репо / `.claude/`.
+- **Фикс:** добавить минимальный `plugin.json` + запись в marketplace; bridge-скилл
+  объявить зависящим от наличия superpowers (graceful, если его нет).
