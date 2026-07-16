@@ -3,12 +3,15 @@
 **Дата:** 2026-07-16
 **Скилл-источник:** `product-vision` (см. `task-skill-1-product-vision.md`)
 **Вход:** сводный фидбэк клиента Луидор (сообщения Кирилл + Кирилл v2 + рукописные заметки), сгруппированный по темам.
-**Статус артефакта:** draft · **version:** 0.2
+**Статус артефакта:** draft · **version:** 0.3
 
+> **Changelog 0.3:** сверка с загруженным Vision+PRD (`reconciliation-gstack-vs-prd.md`).
+> Реконсилированный R0 = полный **P0 из PRD**: чат по сделке (A) + стартовое саммари +
+> двухуровневая выдача + **ВНД/нестандартности (P0.4)** + периметр. Крючок **C** (историчность/EWS)
+> → условный cherry-pick, gate **T-2** (иначе P2). Расхождение разрешено в пользу PRD.
+>
 > **Changelog 0.2:** прогон через gstack `/office-hours` (Startup Mode) и `/plan-ceo-review`
-> (Selective Expansion). Зафиксирован скоуп R0 = клин **A** (чат по сделке + короткое заключение)
-> **+ крючок C** (историчность/EWS-подсветка). Остальное → `TODOS.md`. См.
-> `office-hours-luidor-agent.md`, `plan-ceo-review-luidor-agent.md`.
+> (Selective Expansion).
 
 > Применён output template и handoff schema скилла №1. Каждый элемент имеет `id` и `trace_up`,
 > пригоден как вход для `business-architecture`.
